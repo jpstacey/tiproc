@@ -11,7 +11,7 @@ def get_schedule():
     data = {'by_address': {}, 'by_id': {}}
     with open('schedule.csv', 'rb') as csvfile:
         csvreader = csv.reader(csvfile)
-        for row in [row for row in csvreader if row[2] not in ('Name', '')]:
+        for row in [row for row in csvreader if row[2] not in ('Name',)]:
             data['by_address'][row[1]] = row[:7]
             data['by_id'][row[0]] = row[:7]
     return data
@@ -72,6 +72,8 @@ def decompose_file_for(address, info, data):
                 print "Problem with 26 Beech Road: no images"
             elif info[1] == 'Commas!':
 		print "Still awaiting rest of 2013"
+            elif info[0] == "Date":
+                return
             else:
                 print info
                 raise e
@@ -99,16 +101,15 @@ def decompose_file_for(address, info, data):
         try:
             schedule = data['by_address'][re.sub('Ave', 'Avenue', data_to_dump['address'])]
         except KeyError:
-            print "No schedule found for " + data_to_dump['address']
+            print "No schedule found for '" + data_to_dump['address'] + "'"
     # Only pass in the ID; avoid personal data spreading around
     data_to_dump['schedule_id'] = schedule[0]
     # Amendment - we put "best image" on the wrong sheet, so add that too
     try:
         data_to_dump['best_image'] = "%d" % int(schedule[6])
-    # Some images haven't been picked yet
+    # Most of these are wrong for 2014
     except ValueError, e:
-        if schedule[6] not in ('Becky','','Katharine','J-P'):
-            raise e
+        pass
     # And some rows indicate we're still awaiting 2013
     except IndexError, e:
         if schedule[0] == 'NO_ID' and data_to_dump['who'] not in ('Commas!', 'Abandon!'):
@@ -124,5 +125,7 @@ def decompose_file_for(address, info, data):
 if __name__ == "__main__":
     notes = get_notes()
     data = get_schedule()
+    #print data['by_id']['B1']
+    #exitzorz
     for (address, info) in notes['by_address'].items():
         decompose_file_for(address, info, data)
